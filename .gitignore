@@ -1,0 +1,6 @@
+.env
+__pycache__
+env
+requirements.txt
+credentials.json
+*.log
