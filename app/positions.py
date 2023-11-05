@@ -14,7 +14,6 @@ def stream_positions():
     while True:
         try:
             account_ids = os.getenv("ACCOUNT_IDS")
-            logger.info(account_ids)
             url = f"https://api.tradestation.com/v3/brokerage/stream/accounts/{account_ids}/positions"
             headers = {"Authorization": f"Bearer {get_access_token()}"}
             # Make a GET request with streaming support
@@ -29,17 +28,28 @@ def stream_positions():
                             # Parse each line as JSON
                             data = json.loads(line)
                             # Check for a server error
-                            if "Error" in data or "StreamStatus" in data:
+                            if "Error" in data:
                                 logger.info(
                                     f"Restarting positions stream due to server response: {data}"
                                 )
                                 break  # Exit the loop and restart
+                            # Check stream status
+                            if "StreamStatus" in data:
+                                if data["StreamStatus"] == "GoAway":
+                                    logger.info(
+                                        f"Restarting positions stream due to StreamStatus: {data}"
+                                    )
+                                    break
                             # Check if stream is Heartbeat
-                            if not "Heartbeat" in data:  # Positions stream
+                            if (
+                                not "Heartbeat" in data and "StreamStatus" not in data
+                            ):  # Positions stream
                                 update_spreadsheet(task="Positions", data=data)
 
                         except json.JSONDecodeError as e:
-                            logger.error(f"Error parsing JSON for positions stream: {e}")
+                            logger.error(
+                                f"Error parsing JSON for positions stream: {e}"
+                            )
             else:
                 logger.error(
                     f"Failed to connect to the positions stream endpoint. Status code: {response.status_code}. Response text: {response.text}"

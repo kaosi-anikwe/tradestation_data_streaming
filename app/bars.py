@@ -14,7 +14,9 @@ def stream_bars():
     while True:
         try:
             symbols = os.getenv("SYMBOLS")
-            url = f"https://api.tradestation.com/v3/marketdata/stream/barcharts/{symbols}"
+            url = (
+                f"https://api.tradestation.com/v3/marketdata/stream/barcharts/{symbols}"
+            )
             headers = {"Authorization": f"Bearer {get_access_token()}"}
             # Make a GET request with streaming support
             logger.info("Making request for bars stream.")

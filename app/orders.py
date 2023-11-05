@@ -14,7 +14,6 @@ def stream_orders():
     while True:
         try:
             account_ids = os.getenv("ACCOUNT_IDS")
-            logger.info(account_ids)
             url = f"https://api.tradestation.com/v3/brokerage/stream/accounts/{account_ids}/orders"
             headers = {"Authorization": f"Bearer {get_access_token()}"}
             # Make a GET request with streaming support
@@ -29,13 +28,21 @@ def stream_orders():
                             # Parse each line as JSON
                             data = json.loads(line)
                             # Check for a server error
-                            if "Error" in data or "StreamStatus" in data:
+                            if "Error" in data:
                                 logger.info(
                                     f"Restarting orders stream due to server response: {data}"
                                 )
                                 break  # Exit the loop and restart
+                            if "StreamStatus" in data:
+                                if data["StreamStatus"] == "GoAway":
+                                    logger.info(
+                                        f"Restarting orders stream due to StreamStatus: {data}"
+                                    )
+                                    break
                             # Check if stream is Heartbeat
-                            if not "Heartbeat" in data:  # Orders stream
+                            if (
+                                not "Heartbeat" in data and "StreamStatus" not in data
+                            ):  # Orders stream
                                 update_spreadsheet(task="Orders", data=data)
 
                         except json.JSONDecodeError as e:
@@ -44,7 +51,7 @@ def stream_orders():
                 logger.error(
                     f"Failed to connect to the orders stream endpoint. Status code: {response.status_code}. Response text: {response.text}"
                 )
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             logger.error(f"Orders stream request error: {e}")
 
         # Delay before reconnecting to the streaming endpoint

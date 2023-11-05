@@ -13,11 +13,11 @@ if __name__ == "__main__":
     positions = Process(target=stream_positions)
 
     # bars.start()
-    # quotes.start()
-    orders.start()
-    positions.start()
+    quotes.start()
+    # orders.start()
+    # positions.start()
 
     # bars.join()
-    # quotes.join()
-    orders.join()
-    positions.join()
+    quotes.join()
+    # orders.join()
+    # positions.join()
