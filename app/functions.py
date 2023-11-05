@@ -47,4 +47,5 @@ def get_access_token():
 
 
 def update_spreadsheet(task: str, data: Any, spreadsheet=spreadsheet):
+    print(data)
     logger.info("Quote data sent to spreadsheet.")
