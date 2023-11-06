@@ -13,7 +13,7 @@ from .functions import get_access_token, update_spreadsheet
 def stream_quotes():
     while True:
         try:
-            symbols = os.getenv("SYMBOLS")
+            symbols = os.getenv("QUOTES_SYMBOLS")
             url = f"https://api.tradestation.com/v3/marketdata/stream/quotes/{symbols}"
             headers = {"Authorization": f"Bearer {get_access_token()}"}
             # Make a GET request with streaming support
@@ -37,13 +37,13 @@ def stream_quotes():
                             if not "Heartbeat" in data:  # Quotes stream
                                 update_spreadsheet(task="Quotes", data=data)
 
-                        except json.JSONDecodeError as e:
+                        except Exception as e:
                             logger.error(f"Error parsing JSON for quotes stream: {e}")
             else:
                 logger.error(
-                    f"Failed to connect to the quotees stream endpoint. Status code: {response.status_code}"
+                    f"Failed to connect to the quotees stream endpoint. Status code: {response.status_code}. Response text: {response.text}"
                 )
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             logger.error(f"Quotes stream request error: {e}")
 
         # Delay before reconnecting to the streaming endpoint

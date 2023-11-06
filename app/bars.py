@@ -13,9 +13,9 @@ from .functions import get_access_token, update_spreadsheet
 def stream_bars():
     while True:
         try:
-            symbols = os.getenv("SYMBOLS")
+            symbol = os.getenv("BAR_SYMBOL")
             url = (
-                f"https://api.tradestation.com/v3/marketdata/stream/barcharts/{symbols}"
+                f"https://api.tradestation.com/v3/marketdata/stream/barcharts/{symbol}"
             )
             headers = {"Authorization": f"Bearer {get_access_token()}"}
             # Make a GET request with streaming support
@@ -39,13 +39,13 @@ def stream_bars():
                             if not "Heartbeat" in data:  # Bars stream
                                 update_spreadsheet(task="Bars", data=data)
 
-                        except json.JSONDecodeError as e:
+                        except Exception as e:
                             logger.error(f"Error parsing JSON for bars stream: {e}")
             else:
                 logger.error(
-                    f"Failed to connect to the bars stream endpoint. Status code: {response.status_code}"
+                    f"Failed to connect to the bars stream endpoint. Status code: {response.status_code}. Response text: {response.text}"
                 )
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             logger.error(f"Bars stream request error: {e}")
 
         # Delay before reconnecting to the streaming endpoint

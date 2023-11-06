@@ -46,7 +46,7 @@ def stream_positions():
                             ):  # Positions stream
                                 update_spreadsheet(task="Positions", data=data)
 
-                        except json.JSONDecodeError as e:
+                        except Exception as e:
                             logger.error(
                                 f"Error parsing JSON for positions stream: {e}"
                             )
@@ -54,7 +54,7 @@ def stream_positions():
                 logger.error(
                     f"Failed to connect to the positions stream endpoint. Status code: {response.status_code}. Response text: {response.text}"
                 )
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             logger.error(f"Positions stream request error: {e}")
 
         # Delay before reconnecting to the streaming endpoint

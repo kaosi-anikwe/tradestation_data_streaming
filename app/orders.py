@@ -45,7 +45,7 @@ def stream_orders():
                             ):  # Orders stream
                                 update_spreadsheet(task="Orders", data=data)
 
-                        except json.JSONDecodeError as e:
+                        except Exception as e:
                             logger.error(f"Error parsing JSON for orders stream: {e}")
             else:
                 logger.error(
