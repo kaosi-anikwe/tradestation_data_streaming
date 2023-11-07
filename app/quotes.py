@@ -2,6 +2,7 @@ import os
 import time
 import json
 import requests
+import traceback
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,16 +36,21 @@ def stream_quotes():
                                 break  # Exit the loop and restart
                             # Check if stream is Heartbeat
                             if not "Heartbeat" in data:  # Quotes stream
-                                update_spreadsheet(task="Quotes", data=data)
+                                try:
+                                    update_spreadsheet(task="Quotes", data=data)
+                                except Exception as e:
+                                    logger.error(f"Error updating Quotes spreadsheet")
+                                    logger.error(e)
+                                    break
 
                         except Exception as e:
-                            logger.error(f"Error parsing JSON for quotes stream: {e}")
+                            logger.error(e)
             else:
                 logger.error(
                     f"Failed to connect to the quotees stream endpoint. Status code: {response.status_code}. Response text: {response.text}"
                 )
         except Exception as e:
-            logger.error(f"Quotes stream request error: {e}")
+            logger.error(e)
 
         # Delay before reconnecting to the streaming endpoint
         time.sleep(5)

@@ -2,6 +2,7 @@ import os
 import copy
 import gspread
 import requests
+import traceback
 from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -65,6 +66,17 @@ def flatten_dict(d, parent_key="", sep="_"):
     return items
 
 
+def remove_duplicates(input_dict):
+    """Removes duplicates from a dictionary by preserving the last occurrence of each key."""
+    unique_dict = {}  # Create a new dictionary to store unique key-value pairs
+
+    for key, value in input_dict.items():
+        if key not in unique_dict:
+            unique_dict[key] = value  # Add the key-value pair to the unique dictionary
+
+    return unique_dict
+
+
 def update_spreadsheet(task: str, data: dict, spreadsheet=spreadsheet):
     """Update Google spreadsheet based on task type."""
     # Get worksheet
@@ -99,10 +111,15 @@ def update_spreadsheet(task: str, data: dict, spreadsheet=spreadsheet):
                     # Update record with incoming data
                     record = copy.deepcopy(d)
                     record.update(data)
-                    new_data.append([record.get(key, "") for key in header])
+                    record = remove_duplicates(record)
+                    new_data.append(
+                        [record.get(key, "") for key in header]
+                    ) if record.get("Symbol") not in added_records else None
                     added_records.append(record.get("Symbol"))
                 else:
-                    new_data.append([d.get(key, "") for key in header])
+                    new_data.append([d.get(key, "") for key in header]) if d.get(
+                        "Symbol"
+                    ) not in added_records else None
                     added_records.append(d.get("Symbol"))
             new_data.append([data.get(key, "") for key in header]) if data.get(
                 "Symbol"

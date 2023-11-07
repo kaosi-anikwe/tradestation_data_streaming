@@ -24,11 +24,11 @@ if __name__ == "__main__":
     positions = Process(target=stream_positions)
 
     bars.start()
-    time.sleep(2)
+    time.sleep(5)
     quotes.start()
-    time.sleep(2)
+    time.sleep(5)
     orders.start()
-    time.sleep(2)
+    time.sleep(5)
     positions.start()
 
     bars.join()

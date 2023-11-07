@@ -2,6 +2,7 @@ import os
 import time
 import json
 import requests
+import traceback
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,16 +44,21 @@ def stream_orders():
                             if (
                                 not "Heartbeat" in data and "StreamStatus" not in data
                             ):  # Orders stream
-                                update_spreadsheet(task="Orders", data=data)
+                                try:
+                                    update_spreadsheet(task="Orders", data=data)
+                                except Exception as e:
+                                    logger.error(f"Error updating Orders spreadsheet")
+                                    logger.error(e)
+                                    break
 
                         except Exception as e:
-                            logger.error(f"Error parsing JSON for orders stream: {e}")
+                            logger.error(e)
             else:
                 logger.error(
                     f"Failed to connect to the orders stream endpoint. Status code: {response.status_code}. Response text: {response.text}"
                 )
         except Exception as e:
-            logger.error(f"Orders stream request error: {e}")
+            logger.error(e)
 
         # Delay before reconnecting to the streaming endpoint
         time.sleep(5)

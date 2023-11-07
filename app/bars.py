@@ -2,6 +2,7 @@ import os
 import time
 import json
 import requests
+import traceback
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -37,16 +38,20 @@ def stream_bars():
                                 break  # Exit the loop and restart
                             # Check if stream is Heartbeat
                             if not "Heartbeat" in data:  # Bars stream
-                                update_spreadsheet(task="Bars", data=data)
-
+                                try:
+                                    update_spreadsheet(task="Bars", data=data)
+                                except Exception as e:
+                                    logger.error(f"Error updating Bars spreadsheet")
+                                    logger.error(e)
+                                    break
                         except Exception as e:
-                            logger.error(f"Error parsing JSON for bars stream: {e}")
+                            logger.error(e)
             else:
                 logger.error(
                     f"Failed to connect to the bars stream endpoint. Status code: {response.status_code}. Response text: {response.text}"
                 )
         except Exception as e:
-            logger.error(f"Bars stream request error: {e}")
+            logger.error(e)
 
         # Delay before reconnecting to the streaming endpoint
         time.sleep(5)
