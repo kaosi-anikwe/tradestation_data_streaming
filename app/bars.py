@@ -8,13 +8,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from . import logger
-from .functions import get_access_token, update_spreadsheet
+from .functions import get_access_token, update_spreadsheet, get_parameters
 
 
 def stream_bars():
     while True:
         try:
-            symbol = os.getenv("BAR_SYMBOL")
+            symbol = get_parameters()["BAR_SYMBOL"]
             url = (
                 f"https://api.tradestation.com/v3/marketdata/stream/barcharts/{symbol}"
             )

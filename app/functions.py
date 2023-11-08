@@ -1,8 +1,9 @@
 import os
 import copy
+import time
+import json
 import gspread
 import requests
-import traceback
 from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -10,11 +11,8 @@ from . import logger
 
 load_dotenv()
 
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SECRET")
-refresh_token = os.getenv("REFRESH_TOKEN")
-google_credentials_file = os.getenv("CREDENTIALS_FILE")
 spreadsheet_id = os.getenv("SPREADSHEET_ID")
+google_credentials_file = os.getenv("CREDENTIALS_FILE")
 
 # Set up the scope for accessing Google Sheets
 scope = [
@@ -28,15 +26,30 @@ client = gspread.authorize(creds)
 spreadsheet = client.open_by_key(spreadsheet_id)
 
 
+def get_parameters():
+    with open("parameters.json", "r") as file:
+        parameters = json.load(file)
+    return parameters
+
+def sort_dict(data, first):
+    first_value = data.pop(first)
+    # Sort the remaining key-value pairs alphabetically
+    sorted_dict = {key: data[key] for key in sorted(data)}
+    # Add the specific key-value pair at the beginning
+    sorted_dict = {first: first_value, **sorted_dict}
+    return sorted_dict
+
+
 def get_access_token():
     """Retrieves access token for authenticating requests."""
     auth_url = "https://signin.tradestation.com/oauth/token"
     headers = {"content-type": "application/x-www-form-urlencoded"}
+    parameters = get_parameters()
     payload = {
         "grant_type": "refresh_token",
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "refresh_token": refresh_token,
+        "client_id": parameters["CLIENT_ID"],
+        "client_secret": parameters["CLIENT_SECRET"],
+        "refresh_token": parameters["REFRESH_TOKEN"],
     }
     logger.info("Sending request for access token...")
     response = requests.post(auth_url, headers=headers, data=payload)
@@ -102,6 +115,8 @@ def update_spreadsheet(task: str, data: dict, spreadsheet=spreadsheet):
             new_header = copy.deepcopy(existing_data[0])
             # Update header with new data
             new_header.update(data)
+            # Sort header alphabetically
+            new_header = sort_dict(new_header, "Symbol")
             header = list(new_header.keys())
             # Add list of header values
             new_data.append(header)
@@ -129,6 +144,7 @@ def update_spreadsheet(task: str, data: dict, spreadsheet=spreadsheet):
             new_data.append(header)
             new_data.append([data.get(key, "") for key in header])
         # Update worksheet
+        time.sleep(2)
         worksheet.update(new_data)
 
     elif task == "Bars":
@@ -137,6 +153,7 @@ def update_spreadsheet(task: str, data: dict, spreadsheet=spreadsheet):
         new_data.append(header)
         new_data.append([data.get(key, "") for key in header])
         # Update worksheet
+        time.sleep(2)
         worksheet.update(new_data)
 
     elif task == "Positions":
@@ -145,6 +162,7 @@ def update_spreadsheet(task: str, data: dict, spreadsheet=spreadsheet):
         new_data.append(header)
         new_data.append([data.get(key, "") for key in header])
         # Update worksheet
+        time.sleep(2)
         worksheet.update(new_data)
 
     elif task == "Orders":
@@ -154,6 +172,7 @@ def update_spreadsheet(task: str, data: dict, spreadsheet=spreadsheet):
         new_data.append(header)
         new_data.append([data.get(key, "") for key in header])
         # Update worksheet
+        time.sleep(2)
         worksheet.update(new_data)
 
     logger.info(f"Spreadsheet updated with {task} data.")

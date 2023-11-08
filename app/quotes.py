@@ -8,13 +8,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from . import logger
-from .functions import get_access_token, update_spreadsheet
+from .functions import get_access_token, update_spreadsheet, get_parameters
 
 
 def stream_quotes():
     while True:
         try:
-            symbols = os.getenv("QUOTES_SYMBOLS")
+            symbols = get_parameters()["QUOTES_SYMBOLS"]
             url = f"https://api.tradestation.com/v3/marketdata/stream/quotes/{symbols}"
             headers = {"Authorization": f"Bearer {get_access_token()}"}
             # Make a GET request with streaming support

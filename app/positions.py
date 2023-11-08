@@ -8,14 +8,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from . import logger
-from .functions import get_access_token, update_spreadsheet
+from .functions import get_access_token, update_spreadsheet, get_parameters
 
 
 def stream_positions():
     while True:
         try:
-            account_ids = os.getenv("ACCOUNT_IDS")
-            url = f"https://api.tradestation.com/v3/brokerage/stream/accounts/{account_ids}/positions"
+            account_id = get_parameters()["ACCOUNT_ID"]
+            url = f"https://api.tradestation.com/v3/brokerage/stream/accounts/{account_id}/positions"
             headers = {"Authorization": f"Bearer {get_access_token()}"}
             # Make a GET request with streaming support
             logger.info("Making request for positions stream.")

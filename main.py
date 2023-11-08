@@ -6,7 +6,7 @@ from app.bars import stream_bars
 from app.quotes import stream_quotes
 from app.orders import stream_orders
 from app.positions import stream_positions
-
+from manager import update_parameters
 
 # Function to handle the SIGTERM signal
 def sigterm_handler(signum, frame):
@@ -22,6 +22,8 @@ if __name__ == "__main__":
     quotes = Process(target=stream_quotes)
     orders = Process(target=stream_orders)
     positions = Process(target=stream_positions)
+
+    update_parameters()
 
     bars.start()
     time.sleep(5)
