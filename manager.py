@@ -65,6 +65,16 @@ def update_parameters():
                     stdout=PIPE,
                     stderr=PIPE,
                 )
+                status = (
+                    subprocess.run(
+                        "shell_scripts/check_streamer.sh",
+                        shell=True,
+                        stdout=PIPE,
+                        stderr=PIPE,
+                    )
+                    .stdout.decode("utf-8")
+                    .replace("\n", "")
+                )
 
         parameters.update({"STATUS": status})
         worksheet.update([list(parameters.keys()), list(parameters.values())])
