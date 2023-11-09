@@ -20,6 +20,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(google_credentials_file
 client = gspread.authorize(creds)
 spreadsheet = client.open_by_key(spreadsheet_id)
 
+
 def update_parameters():
     try:
         print("Updating parameters...")
@@ -28,16 +29,42 @@ def update_parameters():
         with open("parameters.json", "w") as file:
             json.dump(parameters, file)
 
-        status = subprocess.run("shell_scripts/check_streamer.sh", shell=True, stdout=PIPE, stderr=PIPE).stdout.decode("utf-8").replace("\n", "")
+        status = (
+            subprocess.run(
+                "shell_scripts/check_streamer.sh", shell=True, stdout=PIPE, stderr=PIPE
+            )
+            .stdout.decode("utf-8")
+            .replace("\n", "")
+        )
 
         if str(parameters.get("SWITCH", "")).lower() == "off":
             # stop streamer
             if not "not" in status:
-                subprocess.run("shell_scripts/stop_streamer.sh", shell=True, stdout=PIPE, stderr=PIPE)
+                subprocess.run(
+                    "shell_scripts/stop_streamer.sh",
+                    shell=True,
+                    stdout=PIPE,
+                    stderr=PIPE,
+                )
+                status = (
+                    subprocess.run(
+                        "shell_scripts/check_streamer.sh",
+                        shell=True,
+                        stdout=PIPE,
+                        stderr=PIPE,
+                    )
+                    .stdout.decode("utf-8")
+                    .replace("\n", "")
+                )
         elif str(parameters.get("SWITCH", "")).lower() == "on":
             # start streamer
             if "not" in status:
-                subprocess.run("shell_scripts/start_streamer.sh", shell=True, stdout=PIPE, stderr=PIPE)
+                subprocess.run(
+                    "shell_scripts/start_streamer.sh",
+                    shell=True,
+                    stdout=PIPE,
+                    stderr=PIPE,
+                )
 
         parameters.update({"STATUS": status})
         worksheet.update([list(parameters.keys()), list(parameters.values())])

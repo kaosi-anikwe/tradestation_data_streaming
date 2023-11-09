@@ -13,6 +13,7 @@ def sigterm_handler(signum, frame):
     print("Received SIGTERM signal. Exiting...")
     exit(0)
 
+
 # Register the SIGTERM signal handler
 signal.signal(signal.SIGTERM, sigterm_handler)
 

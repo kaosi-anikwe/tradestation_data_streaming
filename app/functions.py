@@ -31,6 +31,7 @@ def get_parameters():
         parameters = json.load(file)
     return parameters
 
+
 def sort_dict(data, first):
     first_value = data.pop(first)
     # Sort the remaining key-value pairs alphabetically
