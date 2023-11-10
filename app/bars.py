@@ -12,6 +12,7 @@ from .functions import get_access_token, update_spreadsheet, get_parameters
 
 
 def stream_bars():
+    first = True
     while True:
         try:
             symbol = get_parameters()["BAR_SYMBOL"]
@@ -39,7 +40,8 @@ def stream_bars():
                             # Check if stream is Heartbeat
                             if not "Heartbeat" in data:  # Bars stream
                                 try:
-                                    update_spreadsheet(task="Bars", data=data)
+                                    update_spreadsheet(task="Bars", data=data, reboot=first)
+                                    first = False
                                 except Exception as e:
                                     logger.error(f"Error updating Bars spreadsheet")
                                     logger.error(e)

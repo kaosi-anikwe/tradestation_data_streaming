@@ -91,7 +91,7 @@ def remove_duplicates(input_dict):
     return unique_dict
 
 
-def update_spreadsheet(task: str, data: dict, spreadsheet=spreadsheet):
+def update_spreadsheet(task: str, data: dict, reboot: bool, spreadsheet=spreadsheet):
     """Update Google spreadsheet based on task type."""
     # Get worksheet
     if task not in [worksheet.title for worksheet in spreadsheet.worksheets()]:
@@ -99,81 +99,79 @@ def update_spreadsheet(task: str, data: dict, spreadsheet=spreadsheet):
     else:
         worksheet = spreadsheet.worksheet(task)
 
-    if task == "Quotes":
+    
+    if reboot:
+        logger.info(f"Clearing {task} sheet.")
+        worksheet.clear()
+
+    if task != "Bars":
         try:
             # Load existing data from the sheet
-            existing_data = worksheet.get_all_records()
+            existing_data = worksheet.get_all_values()
+            # Extract headers and data rows
+            headers = existing_data[0]
+            data_rows = existing_data[1:]
+            # Convert data to a list of dictionaries
+            existing_data = [dict(zip(headers, row)) for row in data_rows]
         except:
             # Handle exceptions as needed
             existing_data = []
 
         data = flatten_dict(data)
         new_data = []
+        id_ = ""
 
+        if task == "Quotes":
+            id_ = "Symbol"
+        elif task == "Positions":
+            id_ = "PositionID"
+        elif task == "Orders":
+            id_ == "OrderID"
+            
         if existing_data:
             # Get current symbol being processed
-            symbol = data.get("Symbol")
+            identifier = data.get(id_)
             new_header = copy.deepcopy(existing_data[0])
             # Update header with new data
             new_header.update(data)
             # Sort header alphabetically
-            new_header = sort_dict(new_header, "Symbol")
+            new_header = sort_dict(new_header, id_)
             header = list(new_header.keys())
             # Add list of header values
             new_data.append(header)
             added_records = []  # keeping track of added records
             for d in existing_data:
-                if d.get("Symbol") == symbol:
+                if d.get(id_) == identifier:
                     # Update record with incoming data
                     record = copy.deepcopy(d)
                     record.update(data)
                     record = remove_duplicates(record)
                     new_data.append(
                         [record.get(key, "") for key in header]
-                    ) if record.get("Symbol") not in added_records else None
-                    added_records.append(record.get("Symbol"))
+                    ) if record.get(id_) not in added_records else None
+                    added_records.append(record.get(id_))
                 else:
                     new_data.append([d.get(key, "") for key in header]) if d.get(
-                        "Symbol"
+                        id_
                     ) not in added_records else None
-                    added_records.append(d.get("Symbol"))
+                    added_records.append(d.get(id_))
             new_data.append([data.get(key, "") for key in header]) if data.get(
-                "Symbol"
+                id_
             ) not in added_records else None
         else:
             header = list(data.keys())
             new_data.append(header)
             new_data.append([data.get(key, "") for key in header])
         # Update worksheet
-        time.sleep(2)
         worksheet.update(new_data)
 
-    elif task == "Bars":
+    else:
         new_data = []
         header = list(data.keys())
         new_data.append(header)
         new_data.append([data.get(key, "") for key in header])
         # Update worksheet
-        time.sleep(2)
         worksheet.update(new_data)
 
-    elif task == "Positions":
-        new_data = []
-        header = list(data.keys())
-        new_data.append(header)
-        new_data.append([data.get(key, "") for key in header])
-        # Update worksheet
-        time.sleep(2)
-        worksheet.update(new_data)
-
-    elif task == "Orders":
-        new_data = []
-        data = flatten_dict(data)
-        header = list(data.keys())
-        new_data.append(header)
-        new_data.append([data.get(key, "") for key in header])
-        # Update worksheet
-        time.sleep(2)
-        worksheet.update(new_data)
 
     logger.info(f"Spreadsheet updated with {task} data.")

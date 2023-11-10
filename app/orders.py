@@ -12,6 +12,7 @@ from .functions import get_access_token, update_spreadsheet, get_parameters
 
 
 def stream_orders():
+    first = True
     while True:
         try:
             account_id = get_parameters()["ACCOUNT_ID"]
@@ -45,7 +46,8 @@ def stream_orders():
                                 not "Heartbeat" in data and "StreamStatus" not in data
                             ):  # Orders stream
                                 try:
-                                    update_spreadsheet(task="Orders", data=data)
+                                    update_spreadsheet(task="Orders", data=data, reboot=first)
+                                    first = False
                                 except Exception as e:
                                     logger.error(f"Error updating Orders spreadsheet")
                                     logger.error(e)

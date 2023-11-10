@@ -12,6 +12,7 @@ from .functions import get_access_token, update_spreadsheet, get_parameters
 
 
 def stream_quotes():
+    first = True
     while True:
         try:
             symbols = get_parameters()["QUOTES_SYMBOLS"]
@@ -37,7 +38,8 @@ def stream_quotes():
                             # Check if stream is Heartbeat
                             if not "Heartbeat" in data:  # Quotes stream
                                 try:
-                                    update_spreadsheet(task="Quotes", data=data)
+                                    update_spreadsheet(task="Quotes", data=data, reboot=first)
+                                    first = False
                                 except Exception as e:
                                     logger.error(f"Error updating Quotes spreadsheet")
                                     logger.error(e)
